@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Azra Vault - Microfinance & Credit Operations Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white !important; color: black !important; }
+      .print-card { background: white !important; color: black !important; border: 1px solid #000 !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen flex flex-col">
+
+  <!-- TOP NAVIGATION BAR -->
+  <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 px-4 py-3 flex justify-between items-center no-print">
+    <div class="flex items-center space-x-3 cursor-pointer" onclick="navigate('hero')">
+      <div class="bg-indigo-600 p-2 rounded-xl text-white font-black text-lg shadow-lg shadow-indigo-600/30">
+        <i class="fa-solid fa-vault"></i> AZRA <span class="text-emerald-400">VAULT</span>
+      </div>
+      <div>
+        <h1 class="text-sm font-extrabold tracking-wide text-white">CREDIT OPERATIONS HUB</h1>
+        <p class="text-[10px] text-slate-400 font-mono">UGANDA • MICROFINANCE OS v5.3</p>
+      </div>
+    </div>
+    
+    <div class="flex items-center space-x-3">
+      <span id="userBadge" class="hidden text-xs font-mono bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-full border border-indigo-500/30"></span>
+      <button onclick="navigate('pricing')" class="text-xs font-bold text-slate-300 hover:text-white px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700">Pricing & Plans</button>
+      <button id="navAdminBtn" onclick="navigate('admin')" class="hidden text-xs font-bold text-amber-300 hover:text-amber-200 px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/30">Master Admin</button>
+      <button id="authBtn" onclick="openAuthModal('login')" class="text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 px-4 py-1.5 rounded-lg shadow">Sign In</button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-grow flex flex-col">
+
+    <!-- HERO / DISCOVERY VIEW -->
+    <section id="hero-view" class="flex-grow flex flex-col items-center justify-center p-6 text-center max-w-4xl mx-auto w-full">
+      <div class="inline-flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full text-emerald-400 text-xs font-bold mb-4">
+        <i class="fa-solid fa-circle-check"></i><span>Cloud Database Active & Netlify Ready</span>
+      </div>
+      <h2 class="text-3xl md:text-5xl font-black text-white tracking-tight mb-4">
+        Microfinance <span class="text-indigo-400">&</span> Credit Management Hub
+      </h2>
+      <p class="text-slate-400 text-sm md:text-base max-w-2xl mb-8">
+        Manage loan origination, bulk Excel/CSV defaulter uploads, native WhatsApp/SMS collection triggers, and staff accounts under a single Lender account.
+      </p>
+
+      <div class="flex flex-wrap justify-center gap-4">
+        <button onclick="navigate('lender')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-xl text-xs md:text-sm shadow-lg shadow-emerald-600/30 transition-all flex items-center space-x-2">
+          <i class="fa-solid fa-vault"></i><span>Open Lender Dashboard</span>
+        </button>
+        <button onclick="navigate('pricing')" class="bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold px-6 py-3 rounded-xl text-xs md:text-sm border border-slate-800 transition-all">
+          Subscription Plans
+        </button>
+      </div>
+    </section>
+
+    <!-- LENDER DASHBOARD VIEW -->
+    <section id="lender-view" class="hidden flex-grow flex flex-col max-w-7xl mx-auto w-full p-4 md:p-6 space-y-6">
+      
+      <!-- DASHBOARD HEADER & STATS -->
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-900 border border-slate-800 p-5 rounded-2xl gap-4">
+        <div>
+          <span class="text-[10px] font-mono text-indigo-400 uppercase tracking-widest block">Active Tenant Session</span>
+          <h2 id="tenantDisplayHeader" class="text-xl font-black text-white">Microfinance Ledger</h2>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-3 py-2 rounded-lg border border-slate-700 no-print">
+            <i class="fa-solid fa-print mr-1"></i> Print Portfolio Report
+          </button>
+        </div>
+      </div>
+
+      <!-- METRIC CARDS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+          <span class="text-xs text-slate-400 block mb-1">Total Principal Issued</span>
+          <h3 id="totalAssets" class="text-xl font-black font-mono text-white">UGX 0</h3>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+          <span class="text-xs text-slate-400 block mb-1">Net Outstanding Balance</span>
+          <h3 id="netReceivables" class="text-xl font-black font-mono text-amber-400">UGX 0</h3>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+          <span class="text-xs text-slate-400 block mb-1">Total Borrower Accounts</span>
+          <h3 id="totalAccountsCount" class="text-xl font-black font-mono text-indigo-400">0</h3>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+          <span class="text-xs text-slate-400 block mb-1">Collection Recovery Rate</span>
+          <h3 id="collectionRate" class="text-xl font-black font-mono text-emerald-400">0%</h3>
+        </div>
+      </div>
+
+      <!-- TABS NAVIGATION -->
+      <div class="flex flex-wrap gap-2 border-b border-slate-800 pb-2 no-print">
+        <button id="btn-portfolio" onclick="switchLenderTab('portfolio')" class="px-3 py-2 rounded-lg text-xs font-bold transition-all bg-indigo-600 text-white">Portfolio & CRM</button>
+        <button id="btn-originate" onclick="switchLenderTab('originate')" class="px-3 py-2 rounded-lg text-xs font-bold transition-all bg-slate-900 text-slate-400 hover:text-white">Issue Loan</button>
+        <button id="btn-bulk" onclick="switchLenderTab('bulk')" class="px-3 py-2 rounded-lg text-xs font-bold transition-all bg-slate-900 text-slate-400 hover:text-white">Bulk Defaulter Upload</button>
+        <button id="btn-collateral" onclick="switchLenderTab('collateral')" class="px-3 py-2 rounded-lg text-xs font-bold transition-all bg-slate-900 text-slate-400 hover:text-white">Collateral & Guarantors</button>
+      </div>
+
+      <!-- TAB 1: PORTFOLIO & CRM TABLE -->
+      <div id="tab-portfolio" class="space-y-6">
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl flex flex-col justify-center">
+          <h3 class="text-sm font-bold text-white mb-1">Tenant Credentials & Lender Code</h3>
+          <p class="text-xs text-slate-400 mb-3">Share your Lender Code with staff/collectors so they can register under your account.</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="text-[10px] uppercase font-mono text-slate-500 block mb-1">Tenant Email</label>
+              <input type="text" id="tenantId" readonly class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-indigo-300 font-mono">
+            </div>
+            <div>
+              <label class="text-[10px] uppercase font-mono text-slate-500 block mb-1">Lender Code (Share with Staff)</label>
+              <input type="text" id="activationCode" readonly class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-emerald-400 font-mono font-bold">
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+          <div class="p-4 border-b border-slate-800 flex justify-between items-center">
+            <h3 class="text-sm font-bold text-white">Active Borrower Ledger & Collection Triggers</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-950 text-slate-400 uppercase font-mono text-[10px] border-b border-slate-800">
+                  <th class="p-3">Borrower / NIN</th>
+                  <th class="p-3">Phone</th>
+                  <th class="p-3">Principal</th>
+                  <th class="p-3">Balance Due</th>
+                  <th class="p-3">Maturity Date</th>
+                  <th class="p-3 text-center no-print">Collection Actions</th>
+                </tr>
+              </thead>
+              <tbody id="borrowerTableBody" class="divide-y divide-slate-800">
+                <tr><td colspan="6" class="p-4 text-center text-slate-500">Loading data from Database...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: ORIGINATE LOAN -->
+      <div id="tab-originate" class="hidden bg-slate-900 border border-slate-800 p-6 rounded-xl max-w-4xl mx-auto w-full">
+        <h3 class="text-base font-bold text-white mb-4"><i class="fa-solid fa-file-invoice-dollar text-indigo-400 mr-2"></i>Issue New Loan Account & Legal Agreement</h3>
+        
+        <form id="originateLoanForm" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label class="text-xs font-bold text-slate-300 block mb-1">Borrower Full Name</label>
+              <input type="text" id="origName" required placeholder="Grace Nakato" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white">
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-300 block mb-1">Phone Number</label>
+              <input type="text" id="origPhone" required placeholder="256700000000" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white">
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-300 block mb-1">National ID (NIN)</label>
+              <input type="text" id="origNIN" required placeholder="CM123456789ABC" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white uppercase">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <div>
+              <label class="text-xs font-bold text-slate-300 block mb-1">Principal (UGX)</label>
+              <input type="number" id="origPrincipal" required placeholder="500000" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white">
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-300 block mb-1">Interest Rate (%)</label>
+              <input type="number" id="origInterestRate" required value="15" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white">
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-300 block mb-1">Frequency</label>
+              <select id="origFrequency" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white">
+                <option value="Weekly">Weekly</option>
+                <option value="Monthly" selected>Monthly</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-300 block mb-1">Maturity Date</label>
+              <input type="date" id="origDueDate" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white">
+            </div>
+          </div>
+
+          <div class="border-t border-slate-800 pt-3 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label class="text-xs font-bold text-slate-300 block mb-1">Guarantor Name</label>
+              <input type="text" id="origGuarantor" placeholder="John Ssemwanga" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white">
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-300 block mb-1">Guarantor Phone</label>
+              <input type="text" id="origGuarantorPhone" placeholder="256701111222" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white">
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-300 block mb-1">Pledged Collateral Description</label>
+              <input type="text" id="origCollateral" placeholder="Television / Motorcycle" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white">
+            </div>
+          </div>
+
+          <div class="border-t border-slate-800 pt-3">
+            <label class="text-xs font-bold text-indigo-400 block mb-1"><i class="fa-solid fa-camera mr-1"></i> Client Photo / Collateral Image Upload</label>
+            <input type="file" id="origClientImage" accept="image/*" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-300">
+          </div>
+
+          <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-lg text-xs shadow">Save Loan & Auto-Generate Contract</button>
+        </form>
+      </div>
+
+      <!-- TAB 3: BULK DEFAULTER UPLOAD -->
+      <div id="tab-bulk" class="hidden bg-slate-900 border border-slate-800 p-6 rounded-xl max-w-2xl mx-auto w-full space-y-4">
+        <h3 class="text-base font-bold text-white"><i class="fa-solid fa-file-excel text-emerald-400 mr-2"></i>Bulk Import Defaulters (Excel / CSV)</h3>
+        <p class="text-xs text-slate-400">Upload an Excel or CSV file containing columns: <code class="text-indigo-300">Name</code>, <code class="text-indigo-300">Phone</code>, <code class="text-indigo-300">NIN</code>, <code class="text-indigo-300">Principal</code>, <code class="text-indigo-300">DueDate</code>, <code class="text-indigo-300">Collateral</code>, <code class="text-indigo-300">Guarantor</code>.</p>
+        
+        <form id="uploadBulkForm" class="space-y-4">
+          <input type="file" id="bulkFileInput" accept=".xlsx, .xls, .csv" required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-slate-300">
+          <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg text-xs shadow">Process & Import Defaulters</button>
+        </form>
+      </div>
+
+      <!-- TAB 4: COLLATERAL VAULT -->
+      <div id="tab-collateral" class="hidden bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+        <div class="p-4 border-b border-slate-800">
+          <h3 class="text-sm font-bold text-white">Pledged Collateral Directory</h3>
+        </div>
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-950 text-slate-400 uppercase font-mono text-[10px] border-b border-slate-800">
+              <th class="p-4">Borrower</th>
+              <th class="p-4">Collateral Asset</th>
+              <th class="p-4">Guarantor</th>
+              <th class="p-4">Guarantor Phone</th>
+            </tr>
+          </thead>
+          <tbody id="collateralTableBody" class="divide-y divide-slate-800">
+            <tr><td colspan="4" class="p-4 text-center text-slate-500">No collateral registered.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PRICING & SUBSCRIPTION VIEW -->
+    <section id="pricing-view" class="hidden flex-grow flex flex-col items-center justify-center p-6 max-w-4xl mx-auto w-full">
+      <h2 class="text-3xl font-black text-white mb-2 text-center">Subscription Tiers for Lenders</h2>
+      <p class="text-slate-400 text-xs mb-8 text-center">Select your billing frequency to activate full access to Azra Vault OS.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+          <h3 class="text-xl font-bold text-white mb-1">Weekly Pass</h3>
+          <div class="text-3xl font-black text-emerald-400 mb-4">UGX 25,000 <span class="text-xs text-slate-400 font-normal">/ week</span></div>
+          <button onclick="openPaymentProofModal('Weekly License', 'UGX 25,000')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg text-xs">Submit Payment Proof</button>
+        </div>
+        <div class="bg-slate-900 border-2 border-indigo-600 p-6 rounded-2xl">
+          <h3 class="text-xl font-bold text-white mb-1">Monthly Pro License</h3>
+          <div class="text-3xl font-black text-indigo-400 mb-4">UGX 85,000 <span class="text-xs text-slate-400 font-normal">/ month</span></div>
+          <button onclick="openPaymentProofModal('Monthly License', 'UGX 85,000')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg text-xs">Submit Payment Proof</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- MASTER ADMIN VIEW -->
+    <section id="admin-view" class="hidden flex-grow flex flex-col max-w-7xl mx-auto w-full p-6 space-y-6">
+      <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex justify-between items-center">
+        <div>
+          <span class="text-[10px] font-mono text-amber-400 uppercase tracking-widest block">Master Administrator</span>
+          <h2 class="text-xl font-black text-white">Registered Lenders Directory</h2>
+        </div>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-950 text-slate-400 uppercase font-mono text-[10px] border-b border-slate-800">
+              <th class="p-4">Lender / Email</th>
+              <th class="p-4">Phone</th>
+              <th class="p-4">Lender Code</th>
+              <th class="p-4">Status</th>
+            </tr>
+          </thead>
+          <tbody id="adminLenderTableBody" class="divide-y divide-slate-800">
+            <tr><td colspan="4" class="p-4 text-center text-slate-500">Loading Lenders from Database...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- AUTH MODAL -->
+  <div id="authModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 relative shadow-2xl">
+      <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      
+      <!-- LOGIN BOX -->
+      <div id="loginBox">
+        <h3 class="text-lg font-black text-white mb-1">Sign In to Azra Vault</h3>
+        <p class="text-xs text-slate-400 mb-6">Enter your email or phone number to log in.</p>
+        <form id="loginForm" class="space-y-4">
+          <div>
+            <label class="text-xs font-bold text-slate-300 block mb-1">Email or Phone</label>
+            <input type="text" id="loginEmail" required placeholder="lender@azravault.com" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-300 block mb-1">Password</label>
+            <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white">
+          </div>
+          <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-lg text-xs shadow">Sign In</button>
+        </form>
+        <div class="mt-4 text-center text-xs text-slate-400 space-y-1">
+          <div>Lender Institution? <button onclick="toggleAuth('signupLender')" class="text-indigo-400 font-bold hover:underline">Register Lender</button></div>
+          <div>Staff / Collector? <button onclick="toggleAuth('signupCollector')" class="text-emerald-400 font-bold hover:underline">Register with Lender Code</button></div>
+        </div>
+      </div>
+
+      <!-- REGISTER LENDER BOX -->
+      <div id="signupLenderBox" class="hidden">
+        <h3 class="text-lg font-black text-white mb-1">Register Lender Account</h3>
+        <p class="text-xs text-slate-400 mb-4">Creates an institutional tenant and generates a unique Lender Code.</p>
+        <form id="signupLenderForm" class="space-y-3">
+          <div>
+            <label class="text-xs font-bold text-slate-300 block mb-1">Institution Name</label>
+            <input type="text" id="lenderName" required placeholder="Kampala Credit Ltd" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-300 block mb-1">Email</label>
+            <input type="email" id="lenderEmail" required placeholder="lender@credit.com" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-300 block mb-1">Phone Number</label>
+            <input type="text" id="lenderPhone" required placeholder="256700000000" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-300 block mb-1">Password</label>
+            <input type="password" id="lenderPassword" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white">
+          </div>
+          <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-lg text-xs shadow">Create Lender Account</button>
+        </form>
+        <div class="mt-4 text-center text-xs text-slate-400">
+          Already registered? <button onclick="toggleAuth('login')" class="text-indigo-400 font-bold hover:underline">Sign In</button>
+        </div>
+      </div>
+
+      <!-- REGISTER COLLECTOR BOX -->
+      <div id="signupCollectorBox" class="hidden">
+        <h3 class="text-lg font-black text-white mb-1">Register as Collector / Staff</h3>
+        <p class="text-xs text-slate-400 mb-4">Link your account to your employer using their Lender Code.</p>
+        <form id="signupCollectorForm" class="space-y-3">
+          <div>
+            <label class="text-xs font-bold text-slate-300 block mb-1">Full Name</label>
+            <input type="text" id="collName" required placeholder="John Collector" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-300 block mb-1">Email</label>
+            <input type="email" id="collEmail" required placeholder="john@collector.com" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-300 block mb-1">Phone Number</label>
+            <input type="text" id="collPhone" required placeholder="256701112233" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-300 block mb-1">Password</label>
+            <input type="password" id="collPassword" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-emerald-400 block mb-1">Lender Code (e.g. LND-XXXXXX)</label>
+            <input type="text" id="collLenderCode" required placeholder="LND-123456" class="w-full bg-slate-950 border border-emerald-500/50 rounded-lg px-3 py-2 text-xs text-emerald-300 font-mono font-bold uppercase">
+          </div>
+          <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg text-xs shadow">Register Collector</button>
+        </form>
+        <div class="mt-4 text-center text-xs text-slate-400">
+          Already registered? <button onclick="toggleAuth('login')" class="text-indigo-400 font-bold hover:underline">Sign In</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- REPAYMENT MODAL -->
+  <div id="repaymentModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 relative shadow-2xl space-y-4">
+      <button onclick="closeRepaymentModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      <h3 class="text-base font-bold text-white">Log Repayment</h3>
+      <form id="repaymentForm" onsubmit="submitRepayment(event)" class="space-y-3">
+        <input type="hidden" id="repBorrowerId">
+        <div>
+          <label class="text-xs font-bold text-slate-300 block mb-1">Borrower</label>
+          <input type="text" id="repBorrowerName" readonly class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-indigo-300 font-bold">
+        </div>
+        <div>
+          <label class="text-xs font-bold text-slate-300 block mb-1">Payment Amount (UGX)</label>
+          <input type="number" id="repAmount" required placeholder="50000" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white">
+        </div>
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg text-xs">Record Payment & Update Balance</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- PAYMENT PROOF MODAL -->
+  <div id="paymentProofModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 relative shadow-2xl space-y-4">
+      <button onclick="closePaymentProofModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      <h3 class="text-base font-bold text-white">Submit Subscription Proof</h3>
+      <form id="paymentProofForm" onsubmit="submitPaymentProof(event)" class="space-y-3">
+        <div>
+          <label class="text-xs font-bold text-slate-300 block mb-1">Plan</label>
+          <input type="text" id="ppTier" readonly class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-indigo-300">
+        </div>
+        <div>
+          <label class="text-xs font-bold text-slate-300 block mb-1">Amount</label>
+          <input type="text" id="ppAmount" readonly class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-emerald-400 font-mono">
+        </div>
+        <div>
+          <label class="text-xs font-bold text-slate-300 block mb-1">Transaction Ref Code</label>
+          <input type="text" id="ppTxRef" required placeholder="TX-99882211" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white font-mono">
+        </div>
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg text-xs">Submit to Admin</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- APPLICATION JAVASCRIPT LOGIC -->
+  <script>
+    // DYNAMIC BACKEND SELECTOR (LOCAL VS NETLIFY PROD)
+    const PRODUCTION_BACKEND_URL = 'https://azra-vault-api.onrender.com/api';
+    const isLocalhost = Boolean(
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.protocol === 'file:'
+    );
+    const API_BASE = isLocalhost ? 'http://localhost:3000/api' : PRODUCTION_BACKEND_URL;
+
+    let currentUser = JSON.parse(localStorage.getItem('azra_user')) || null;
+    let allBorrowers = [];
+
+    window.onload = function() { init(); };
+
+    async function init() {
+      updateSessionUI();
+      if (currentUser) {
+        await loadBorrowers();
+        if (currentUser.role === 'admin') {
+          await loadAdminLenders();
+        }
+      }
+    }
+
+    async function loadBorrowers() {
+      try {
+        const tenantId = currentUser ? currentUser.tenant_id : '';
+        const response = await fetch(`${API_BASE}/borrowers?tenant_id=${encodeURIComponent(tenantId)}`);
+        allBorrowers = await response.json();
+        renderBorrowersTable();
+        renderCollateralTable();
+        recalculateMetrics();
+      } catch (err) {
+        console.error('Failed to load borrowers from backend:', err);
+      }
+    }
+
+    async function loadAdminLenders() {
+      try {
+        const response = await fetch(`${API_BASE}/lenders`);
+        const lenders = await response.json();
+        const tbody = document.getElementById('adminLenderTableBody');
+        if (!tbody) return;
+
+        if (lenders.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500">No registered lenders found.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = lenders.map(l => `
+          <tr class="hover:bg-slate-900/50">
+            <td class="p-4 font-bold text-white">${l.name}<br><span class="text-[10px] text-slate-500 font-mono">${l.email}</span></td>
+            <td class="p-4 font-mono text-indigo-300">${l.phone}</td>
+            <td class="p-4 font-mono font-bold text-emerald-400">${l.lender_code}</td>
+            <td class="p-4 font-bold text-emerald-400">${l.status}</td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Failed to load lenders:', err);
+      }
+    }
+
+    function renderBorrowersTable() {
+      const tbody = document.getElementById('borrowerTableBody');
+      if (!tbody) return;
+
+      if (!Array.isArray(allBorrowers) || allBorrowers.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">No active borrower accounts found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = allBorrowers.map(b => {
+        const principal = parseFloat(b.principal) || 0;
+        const due = parseFloat(b.amount_due) || 0;
+        const paid = parseFloat(b.amount_paid) || 0;
+        const bal = due - paid;
+        const dueDateStr = b.due_date ? String(b.due_date).substring(0,10) : '';
+
+        return `
+          <tr class="hover:bg-slate-900/50">
+            <td class="p-3 font-bold text-white">${b.borrower_name}<br><span class="text-[10px] text-slate-500 font-mono">NIN: ${b.nin}</span></td>
+            <td class="p-3 font-mono text-indigo-300">${b.phone_number}</td>
+            <td class="p-3 font-mono">UGX ${principal.toLocaleString()}</td>
+            <td class="p-3 font-mono font-bold ${bal > 0 ? 'text-rose-400' : 'text-emerald-400'}">UGX ${bal.toLocaleString()}</td>
+            <td class="p-3 font-mono text-slate-400">${dueDateStr}</td>
+            <td class="p-3 text-center space-x-1 no-print">
+              <button onclick="triggerWhatsApp('${b.phone_number}', '${b.borrower_name}', ${bal}, '${dueDateStr}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-2 py-1 rounded text-[10px]" title="Send WhatsApp Reminder"><i class="fa-brands fa-whatsapp"></i></button>
+              <button onclick="triggerSMS('${b.phone_number}', '${b.borrower_name}', ${bal})" class="bg-blue-600 hover:bg-blue-500 text-white px-2 py-1 rounded text-[10px]" title="Send SMS Reminder"><i class="fa-solid fa-comment-sms"></i></button>
+              <button onclick="triggerCall('${b.phone_number}')" class="bg-amber-600 hover:bg-amber-500 text-white px-2 py-1 rounded text-[10px]" title="Call Borrower"><i class="fa-solid fa-phone"></i></button>
+              <button onclick="openRepaymentModal(${b.id}, '${b.borrower_name}')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2 py-1 rounded text-[10px]">Log Payment</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderCollateralTable() {
+      const tbody = document.getElementById('collateralTableBody');
+      if (!tbody) return;
+
+      if (!Array.isArray(allBorrowers) || allBorrowers.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500">No collateral registered.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = allBorrowers.map(b => `
+        <tr class="hover:bg-slate-900/50">
+          <td class="p-4 font-bold text-white">${b.borrower_name}</td>
+          <td class="p-4 text-amber-400">${b.collateral || 'None'}</td>
+          <td class="p-4">${b.guarantor || 'N/A'}</td>
+          <td class="p-4 font-mono text-indigo-300">${b.guarantor_phone || 'N/A'}</td>
+        </tr>
+      `).join('');
+    }
+
+    function recalculateMetrics() {
+      let totalP = 0, totalDue = 0, totalPaid = 0;
+
+      if (Array.isArray(allBorrowers)) {
+        allBorrowers.forEach(b => {
+          totalP += parseFloat(b.principal) || 0;
+          totalDue += parseFloat(b.amount_due) || 0;
+          totalPaid += parseFloat(b.amount_paid) || 0;
+        });
+      }
+
+      const netRec = totalDue - totalPaid;
+      const rate = totalDue > 0 ? ((totalPaid / totalDue) * 100).toFixed(1) : '0';
+
+      if (document.getElementById('totalAssets')) document.getElementById('totalAssets').innerText = `UGX ${totalP.toLocaleString()}`;
+      if (document.getElementById('netReceivables')) document.getElementById('netReceivables').innerText = `UGX ${netRec.toLocaleString()}`;
+      if (document.getElementById('totalAccountsCount')) document.getElementById('totalAccountsCount').innerText = `${Array.isArray(allBorrowers) ? allBorrowers.length : 0}`;
+      if (document.getElementById('collectionRate')) document.getElementById('collectionRate').innerText = `${rate}%`;
+    }
+
+    // COMMUNICATION TRIGGERS (NATIVE DEVICE APPS)
+    function triggerWhatsApp(phone, name, amount, dueDate) {
+      const message = `Hello ${name}, this is an urgent reminder from your credit institution. Your loan balance of UGX ${amount.toLocaleString()} is due on ${dueDate}. Please clear your balance promptly.`;
+      window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
+    }
+
+    function triggerCall(phone) {
+      window.location.href = `tel:${phone}`;
+    }
+
+    function triggerSMS(phone, name, amount) {
+      const message = `Credit Reminder: Dear ${name}, your balance of UGX ${amount.toLocaleString()} is overdue. Please make payment immediately.`;
+      window.location.href = `sms:${phone}?body=${encodeURIComponent(message)}`;
+    }
+
+    // BULK EXCEL UPLOAD HANDLER
+    document.getElementById('uploadBulkForm')?.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const fileInput = document.getElementById('bulkFileInput');
+      if (!fileInput.files[0]) return;
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const sheetName = workbook.SheetNames[0];
+          const sheet = workbook.Sheets[sheetName];
+          const jsonRows = XLSX.utils.sheet_to_json(sheet);
+
+          const formattedBorrowers = jsonRows.map(row => ({
+            borrower_name: row.Name || row.borrower_name || 'Unnamed Defaulter',
+            phone_number: String(row.Phone || row.phone_number || ''),
+            nin: row.NIN || row.nin || 'N/A',
+            principal: parseFloat(row.Principal || row.principal || 100000),
+            due_date: row.DueDate || row.due_date || '2026-12-31',
+            collateral: row.Collateral || row.collateral || 'General Asset',
+            guarantor: row.Guarantor || row.guarantor || 'N/A'
+          }));
+
+          const response = await fetch(`${API_BASE}/borrowers/bulk`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tenant_id: currentUser.tenant_id, borrowers: formattedBorrowers })
+          });
+
+          const result = await response.json();
+          if (result.success) {
+            alert(result.message);
+            document.getElementById('uploadBulkForm').reset();
+            await loadBorrowers();
+            switchLenderTab('portfolio');
+          } else {
+            alert(result.error);
+          }
+        } catch (err) {
+          alert('Failed to parse Excel file. Check column headers.');
+        }
+      };
+      reader.readAsArrayBuffer(fileInput.files[0]);
+    });
+
+    // FORM SUBMISSIONS
+
+    document.getElementById('loginForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
+
+      try {
+        const response = await fetch(`${API_BASE}/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          currentUser = result.user;
+          localStorage.setItem('azra_user', JSON.stringify(currentUser));
+          closeAuthModal();
+          await init();
+          navigate(currentUser.role === 'admin' ? 'admin' : 'lender');
+        } else {
+          alert(result.error);
+        }
+      } catch (err) {
+        alert('Server offline or unreachable.');
+      }
+    };
+
+    document.getElementById('signupLenderForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const name = document.getElementById('lenderName').value.trim();
+      const email = document.getElementById('lenderEmail').value.trim();
+      const phone = document.getElementById('lenderPhone').value.trim();
+      const password = document.getElementById('lenderPassword').value.trim();
+
+      try {
+        const response = await fetch(`${API_BASE}/lenders/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, phone, password })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          alert(`Lender registered! Your Lender Code is: ${result.lenderCode}`);
+          toggleAuth('login');
+        } else {
+          alert(result.error);
+        }
+      } catch (err) {
+        alert('Could not register lender.');
+      }
+    };
+
+    document.getElementById('signupCollectorForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const name = document.getElementById('collName').value.trim();
+      const email = document.getElementById('collEmail').value.trim();
+      const phone = document.getElementById('collPhone').value.trim();
+      const password = document.getElementById('collPassword').value.trim();
+      const lenderCode = document.getElementById('collLenderCode').value.trim();
+
+      try {
+        const response = await fetch(`${API_BASE}/collectors/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, phone, password, lenderCode })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          alert(result.message);
+          toggleAuth('login');
+        } else {
+          alert(result.error);
+        }
+      } catch (err) {
+        alert('Could not register collector.');
+      }
+    };
+
+    document.getElementById('originateLoanForm').onsubmit = async function(e) {
+      e.preventDefault();
+      if (!currentUser) return;
+
+      const imageInput = document.getElementById('origClientImage');
+      let base64Image = '';
+
+      if (imageInput.files && imageInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = async function(uploadEvent) {
+          base64Image = uploadEvent.target.result;
+          await sendLoanData(base64Image);
+        };
+        reader.readAsDataURL(imageInput.files[0]);
+      } else {
+        await sendLoanData('');
+      }
+    };
+
+    async function sendLoanData(clientImage) {
+      const data = {
+        tenant_id: currentUser.tenant_id,
+        borrower_name: document.getElementById('origName').value.trim(),
+        phone_number: document.getElementById('origPhone').value.trim(),
+        nin: document.getElementById('origNIN').value.trim(),
+        principal: document.getElementById('origPrincipal').value,
+        interest_rate: document.getElementById('origInterestRate').value,
+        frequency: document.getElementById('origFrequency').value,
+        due_date: document.getElementById('origDueDate').value,
+        guarantor: document.getElementById('origGuarantor').value.trim(),
+        guarantor_phone: document.getElementById('origGuarantorPhone').value.trim(),
+        collateral: document.getElementById('origCollateral').value.trim(),
+        client_image: clientImage
+      };
+
+      try {
+        const response = await fetch(`${API_BASE}/borrowers`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          alert('Loan saved to cloud database with agreement contract!');
+          document.getElementById('originateLoanForm').reset();
+          await loadBorrowers();
+          switchLenderTab('portfolio');
+        }
+      } catch (err) {
+        alert('Failed to save loan.');
+      }
+    }
+
+    async function submitRepayment(e) {
+      e.preventDefault();
+      const borrower_id = document.getElementById('repBorrowerId').value;
+      const amount = document.getElementById('repAmount').value;
+
+      try {
+        const response = await fetch(`${API_BASE}/repayments`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ borrower_id, amount, recorded_by: currentUser.name })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          alert(`Payment logged! Tx Ref: ${result.txRef}`);
+          closeRepaymentModal();
+          await loadBorrowers();
+        }
+      } catch (err) {
+        alert('Failed to log payment.');
+      }
+    }
+
+    async function submitPaymentProof(e) {
+      e.preventDefault();
+      const tier = document.getElementById('ppTier').value;
+      const amount = document.getElementById('ppAmount').value;
+      const tx_ref = document.getElementById('ppTxRef').value.trim();
+
+      try {
+        const response = await fetch(`${API_BASE}/subscriptions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lender_email: currentUser ? currentUser.email : 'guest@lender.com', tier, amount, tx_ref })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          alert('Subscription payment proof submitted for verification!');
+          closePaymentProofModal();
+        }
+      } catch (err) {
+        alert('Failed to submit subscription proof.');
+      }
+    }
+
+    // MODAL & NAVIGATION HELPERS
+
+    function openRepaymentModal(id, name) {
+      document.getElementById('repBorrowerId').value = id;
+      document.getElementById('repBorrowerName').value = name;
+      document.getElementById('repaymentModal').classList.remove('hidden');
+    }
+    function closeRepaymentModal() { document.getElementById('repaymentModal').classList.add('hidden'); }
+
+    function openPaymentProofModal(tier, amount) {
+      document.getElementById('ppTier').value = tier;
+      document.getElementById('ppAmount').value = amount;
+      document.getElementById('paymentProofModal').classList.remove('hidden');
+    }
+    function closePaymentProofModal() { document.getElementById('paymentProofModal').classList.add('hidden'); }
+
+    function switchLenderTab(tab) {
+      ['portfolio', 'originate', 'bulk', 'collateral'].forEach(t => {
+        const el = document.getElementById('tab-' + t);
+        if (el) el.classList.add('hidden');
+      });
+      const target = document.getElementById('tab-' + tab);
+      if (target) target.classList.remove('hidden');
+    }
+
+    function navigate(view) {
+      ['hero-view', 'pricing-view', 'lender-view', 'admin-view'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+      });
+
+      if (view === 'hero') document.getElementById('hero-view').classList.remove('hidden');
+      if (view === 'pricing') document.getElementById('pricing-view').classList.remove('hidden');
+      if (view === 'lender') {
+        if (!currentUser) { openAuthModal('login'); return; }
+        document.getElementById('lender-view').classList.remove('hidden');
+        switchLenderTab('portfolio');
+      }
+      if (view === 'admin') {
+        if (!currentUser || currentUser.role !== 'admin') { alert('Unauthorized'); return; }
+        document.getElementById('admin-view').classList.remove('hidden');
+      }
+    }
+
+    function updateSessionUI() {
+      const userBadge = document.getElementById('userBadge');
+      const authBtn = document.getElementById('authBtn');
+      const navAdminBtn = document.getElementById('navAdminBtn');
+      const tenantIdInput = document.getElementById('tenantId');
+      const activationCodeInput = document.getElementById('activationCode');
+
+      if (currentUser) {
+        if (userBadge) { userBadge.innerText = `${currentUser.name} (${currentUser.role.toUpperCase()})`; userBadge.classList.remove('hidden'); }
+        if (authBtn) { authBtn.innerText = 'Sign Out'; authBtn.onclick = logout; }
+        if (currentUser.role === 'admin' && navAdminBtn) navAdminBtn.classList.remove('hidden');
+        if (tenantIdInput) tenantIdInput.value = currentUser.tenant_id;
+        if (activationCodeInput) activationCodeInput.value = currentUser.approval_code || '';
+      } else {
+        if (userBadge) userBadge.classList.add('hidden');
+        if (navAdminBtn) navAdminBtn.classList.add('hidden');
+        if (authBtn) { authBtn.innerText = 'Sign In'; authBtn.onclick = () => openAuthModal('login'); }
+      }
+    }
+
+    function openAuthModal(mode) {
+      document.getElementById('authModal').classList.remove('hidden');
+      toggleAuth(mode);
+    }
+    function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
+
+    function toggleAuth(mode) {
+      document.getElementById('loginBox').classList.add('hidden');
+      document.getElementById('signupLenderBox').classList.add('hidden');
+      document.getElementById('signupCollectorBox').classList.add('hidden');
+
+      if (mode === 'login') document.getElementById('loginBox').classList.remove('hidden');
+      if (mode === 'signupLender') document.getElementById('signupLenderBox').classList.remove('hidden');
+      if (mode === 'signupCollector') document.getElementById('signupCollectorBox').classList.remove('hidden');
+    }
+
+    function logout() {
+      localStorage.removeItem('azra_user');
+      currentUser = null;
+      allBorrowers = [];
+      init();
+      navigate('hero');
+    }
+  </script>
+</body>
+</html>
